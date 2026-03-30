@@ -112,7 +112,7 @@ jobs:
           find app/build/outputs/apk/release -name "*.apk" -exec cp {} apks/ \;
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: simplexray-apks
           path: apks/
