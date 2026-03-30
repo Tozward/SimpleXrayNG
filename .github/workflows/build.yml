@@ -51,11 +51,15 @@ jobs:
 
       - name: Setup Keystore and Properties
         run: |
-          echo "${{ secrets.SIGNING_KEYSTORE }}" | base64 -d > ./store.jks
-          echo "storeFile=store.jks" > ./store.properties
-          echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> ./store.properties
-          echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> ./store.properties
-          echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> ./store.properties
+          if [ -n "${{ secrets.SIGNING_KEYSTORE }}" ]; then
+            echo "${{ secrets.SIGNING_KEYSTORE }}" | base64 -d > ./store.jks
+            echo "storeFile=store.jks" > ./store.properties
+            echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> ./store.properties
+            echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> ./store.properties
+            echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> ./store.properties
+          else
+            echo "Secrets not available (e.g., Dependabot or Fork PR), skipping Keystore setup."
+          fi
 
       - name: Download Rules Files
         run: |
