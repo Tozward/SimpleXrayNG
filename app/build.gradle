@@ -32,6 +32,11 @@ android {
     namespace "com.simplexray.an"
     compileSdk = 36
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
     defaultConfig {
         applicationId "com.simplexray.an"
         versionCode versionProps.APP_VERSION_CODE.toInteger()
@@ -110,9 +115,6 @@ android {
         includeInBundle = false
     }
     ndkVersion versionProps.NDK_VERSION
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
 
     splits {
         abi {
@@ -178,4 +180,10 @@ dependencies {
     implementation 'com.github.nanihadesuka:LazyColumnScrollbar:2.2.0'
     implementation 'sh.calvin.reorderable:reorderable:3.0.0'
     implementation "com.squareup.okhttp3:okhttp:5.3.2"
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    kotlinOptions {
+        jvmTarget = "17"
+    }
 }
