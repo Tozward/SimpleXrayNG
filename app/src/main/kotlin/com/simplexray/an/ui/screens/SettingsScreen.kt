@@ -341,6 +341,22 @@ fun SettingsScreen(
             }
         )
 
+        ListItem(
+            headlineContent = { Text(stringResource(R.string.hide_from_recents_title)) },
+            supportingContent = { Text(stringResource(R.string.hide_from_recents_summary)) },
+            trailingContent = {
+                Switch(
+                    checked = settingsState.switches.hideFromRecents,
+                    onCheckedChange = {
+                        mainViewModel.setHideFromRecentsEnabled(it)
+                        // take effect immediately
+                        val am = context.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+                        am.appTasks?.firstOrNull()?.setExcludeFromRecents(it)
+                    }
+                )
+            }
+        )
+
         PreferenceCategoryTitle(stringResource(R.string.vpn_interface))
 
         ListItem(

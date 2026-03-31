@@ -181,6 +181,12 @@ class Preferences(context: Context) {
             setValueInProvider(DISABLE_VPN, value)
         }
 
+    var hideFromRecents: Boolean
+        get() = getBooleanPref(HIDE_FROM_RECENTS, false)
+        set(enable) {
+            setValueInProvider(HIDE_FROM_RECENTS, enable)
+        }
+
     val tunnelMtu: Int
         get() = 8500
 
@@ -321,6 +327,7 @@ class Preferences(context: Context) {
         const val CUSTOM_GEOSITE_IMPORTED: String = "CustomGeositeImported"
         const val CONFIG_FILES_ORDER: String = "ConfigFilesOrder"
         const val DISABLE_VPN: String = "DisableVpn"
+        const val HIDE_FROM_RECENTS: String = "HideFromRecents"
         const val CONNECTIVITY_TEST_TARGET: String = "ConnectivityTestTarget"
         const val CONNECTIVITY_TEST_TIMEOUT: String = "ConnectivityTestTimeout"
         const val GEOIP_URL: String = "GeoipUrl"

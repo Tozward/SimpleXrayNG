@@ -92,7 +92,8 @@ class MainViewModel(application: Application) :
                 httpProxyEnabled = prefs.httpProxyEnabled,
                 bypassLanEnabled = prefs.bypassLan,
                 disableVpn = prefs.disableVpn,
-                themeMode = prefs.theme
+                themeMode = prefs.theme,
+                hideFromRecents = prefs.hideFromRecents
             ),
             info = InfoStates(
                 appVersion = BuildConfig.VERSION_NAME,
@@ -185,7 +186,8 @@ class MainViewModel(application: Application) :
                 httpProxyEnabled = prefs.httpProxyEnabled,
                 bypassLanEnabled = prefs.bypassLan,
                 disableVpn = prefs.disableVpn,
-                themeMode = prefs.theme
+                themeMode = prefs.theme,
+                hideFromRecents = prefs.hideFromRecents
             ),
             info = _settingsState.value.info.copy(
                 appVersion = BuildConfig.VERSION_NAME,
@@ -490,6 +492,13 @@ class MainViewModel(application: Application) :
             switches = _settingsState.value.switches.copy(themeMode = mode)
         )
         reloadView?.invoke()
+    }
+
+    fun setHideFromRecentsEnabled(enabled: Boolean) {
+        prefs.hideFromRecents = enabled
+        _settingsState.value = _settingsState.value.copy(
+            switches = _settingsState.value.switches.copy(hideFromRecents = enabled)
+        )
     }
 
     fun importRuleFile(uri: Uri, fileName: String) {

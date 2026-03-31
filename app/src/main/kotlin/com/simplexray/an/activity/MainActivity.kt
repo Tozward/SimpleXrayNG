@@ -39,6 +39,10 @@ class MainActivity : ComponentActivity() {
         mainViewModel.reloadView = { initView() }
         initView()
 
+        // Dynamically apply "Hide from the Recents screen" setting
+        val am = getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
+        am.appTasks?.firstOrNull()?.setExcludeFromRecents(mainViewModel.prefs.hideFromRecents)
+
         processShareIntent(intent)
         Log.d(TAG, "MainActivity onCreate called.")
     }
