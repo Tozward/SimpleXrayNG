@@ -188,7 +188,8 @@ class MainViewModel(application: Application) :
                 bypassLanEnabled = prefs.bypassLan,
                 disableVpn = prefs.disableVpn,
                 themeMode = prefs.theme,
-                hideFromRecents = prefs.hideFromRecents
+                hideFromRecents = prefs.hideFromRecents,
+                checkPreReleaseEnabled = prefs.checkPreRelease
             ),
             info = _settingsState.value.info.copy(
                 appVersion = BuildConfig.VERSION_NAME,
@@ -1012,7 +1013,7 @@ class MainViewModel(application: Application) :
             }.build()
 
             try {
-                val latestTag: String
+                var latestTag = ""
                 if (prefs.checkPreRelease) {
                     val sourceUrl = application.getString(R.string.source_url)
                     val repoPath = sourceUrl.removePrefix("https://github.com/")
