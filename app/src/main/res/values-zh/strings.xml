@@ -121,5 +121,6 @@
     <string name="theme_summary">调整主题为深色或浅色</string>
     <string name="theme_light">浅色</string>
     <string name="theme_dark">深色</string>
+    <string name="theme_amoled">AMOLED</string>
     <string name="auto">自动</string>
 </resources>

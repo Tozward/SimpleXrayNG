@@ -89,6 +89,7 @@ fun SettingsScreen(
     val themeOptions = listOf(
         ThemeMode.Light,
         ThemeMode.Dark,
+        ThemeMode.Amoled,
         ThemeMode.Auto
     )
     var selectedThemeOption by remember { mutableStateOf(settingsState.switches.themeMode) }
@@ -291,6 +292,7 @@ fun SettingsScreen(
                                     id = when (selectedThemeOption) {
                                         ThemeMode.Light -> R.string.theme_light
                                         ThemeMode.Dark -> R.string.theme_dark
+                                        ThemeMode.Amoled -> R.string.theme_amoled
                                         ThemeMode.Auto -> R.string.auto
                                     }
                                 ),
@@ -324,6 +326,7 @@ fun SettingsScreen(
                                             id = when (option) {
                                                 ThemeMode.Light -> R.string.theme_light
                                                 ThemeMode.Dark -> R.string.theme_dark
+                                                ThemeMode.Amoled -> R.string.theme_amoled
                                                 ThemeMode.Auto -> R.string.auto
                                             }
                                         )
