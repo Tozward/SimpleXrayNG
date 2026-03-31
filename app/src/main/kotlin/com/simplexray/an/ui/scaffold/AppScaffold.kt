@@ -385,6 +385,14 @@ private fun LogActions(
             },
             enabled = hasLogsToExport
         )
+        DropdownMenuItem(
+            text = { Text(stringResource(R.string.clear_logs)) },
+            onClick = {
+                logViewModel.clearLogs()
+                expanded = false
+            },
+            enabled = hasLogsToExport
+        )
     }
 }
 

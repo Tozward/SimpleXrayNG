@@ -44,6 +44,12 @@ class LogViewModel(application: Application) :
     private val _filteredEntries = MutableStateFlow<List<String>>(emptyList())
     val filteredEntries: StateFlow<List<String>> = _filteredEntries.asStateFlow()
 
+    private val _isPaused = MutableStateFlow(false)
+    val isPaused: StateFlow<Boolean> = _isPaused.asStateFlow()
+
+    fun togglePause() {
+        _isPaused.value = !_isPaused.value
+    }
     fun onSearchQueryChange(query: String) {
         _searchQuery.value = query
     }

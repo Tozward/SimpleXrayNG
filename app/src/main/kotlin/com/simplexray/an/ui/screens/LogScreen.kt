@@ -8,14 +8,22 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.PanTool
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +39,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simplexray.an.R
 import com.simplexray.an.ui.theme.ScrollbarDefaults
 import com.simplexray.an.viewmodel.LogViewModel
+import kotlinx.coroutines.launch
 import my.nanihadesuka.compose.LazyColumnScrollbar
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -41,7 +50,9 @@ fun LogScreen(
 ) {
     val context = LocalContext.current
     val filteredEntries by logViewModel.filteredEntries.collectAsStateWithLifecycle()
+    val isPaused by logViewModel.isPaused.collectAsStateWithLifecycle()
     val isInitialLoad = remember { mutableStateOf(true) }
+    val coroutineScope = rememberCoroutineScope()
 
     DisposableEffect(key1 = Unit) {
         logViewModel.registerLogReceiver(context)
@@ -51,42 +62,79 @@ fun LogScreen(
         }
     }
 
-    LaunchedEffect(filteredEntries) {
-        if (filteredEntries.isNotEmpty() && isInitialLoad.value) {
-            listState.animateScrollToItem(0)
-            isInitialLoad.value = false
+    val isAtBottom by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex == 0
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        if (filteredEntries.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    stringResource(R.string.no_log_entries),
-                    modifier = Modifier.fillMaxWidth(),
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center,
-                )
-            }
-        } else {
-            LazyColumnScrollbar(
-                state = listState,
-                settings = ScrollbarDefaults.defaultScrollbarSettings()
-            ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.padding(start = 6.dp, end = 6.dp),
-                    reverseLayout = true
+    LaunchedEffect(filteredEntries.size) {
+        if (filteredEntries.isNotEmpty() && isInitialLoad.value) {
+            listState.animateScrollToItem(0)
+            isInitialLoad.value = false
+        } else if (!isPaused && isAtBottom && filteredEntries.isNotEmpty()) {
+            listState.scrollToItem(0)
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            if (filteredEntries.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    items(filteredEntries) { logEntry ->
-                        LogEntryItem(logEntry = logEntry)
+                    Text(
+                        stringResource(R.string.no_log_entries),
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            } else {
+                LazyColumnScrollbar(
+                    state = listState,
+                    settings = ScrollbarDefaults.defaultScrollbarSettings()
+                ) {
+                    SelectionContainer {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.padding(start = 6.dp, end = 6.dp),
+                            reverseLayout = true
+                        ) {
+                            items(
+                                items = filteredEntries,
+                                key = { it } // provide key to ensure the display does not jump when inserting new data
+                            ) { logEntry ->
+                                LogEntryItem(logEntry = logEntry)
+                            }
+                        }
                     }
                 }
+            }
+        }
+
+        if (filteredEntries.isNotEmpty() || isPaused) {
+            FloatingActionButton(
+                onClick = {
+                    if (isPaused) {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(0)
+                        }
+                    }
+                    logViewModel.togglePause()
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+                containerColor = if (isPaused) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.primaryContainer
+            ) {
+                Icon(
+                    imageVector = if (isPaused) Icons.Default.ArrowDownward else Icons.Default.PanTool,
+                    contentDescription = if (isPaused) "Resume Logs" else "Pause Logs"
+                )
             }
         }
     }
