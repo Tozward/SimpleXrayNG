@@ -30,7 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
@@ -277,7 +277,7 @@ fun SettingsScreen(
                     TextButton(
                         onClick = {},
                         modifier = Modifier
-                            .menuAnchor(MenuAnchorType.PrimaryEditable, true),
+                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
                         colors = ButtonDefaults.textButtonColors(
                             containerColor = MaterialTheme.colorScheme.surfaceContainer
                         )
