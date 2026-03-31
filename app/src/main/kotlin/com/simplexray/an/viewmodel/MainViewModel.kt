@@ -885,7 +885,7 @@ class MainViewModel(application: Application) :
                     throw IOException("Failed to download file: ${response.code}")
                 }
 
-                val body = response.body ?: throw IOException("Response body is null")
+                val body = response.body
                 val totalBytes = body.contentLength()
                 var bytesRead = 0L
                 var lastProgress = -1
@@ -969,7 +969,7 @@ class MainViewModel(application: Application) :
     private suspend fun Call.await(): Response = suspendCancellableCoroutine { continuation ->
         enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
-                continuation.resume(response, null)
+                continuation.resumeWith(Result.success(response))
             }
 
             override fun onFailure(call: Call, e: IOException) {

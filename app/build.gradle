@@ -1,17 +1,16 @@
 plugins {
     id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
     id 'org.jetbrains.kotlin.plugin.compose' version "${kotlin_version}"
-    id 'com.google.protobuf' version '0.9.4'
+    id 'com.google.protobuf' version '0.9.6'
 }
 
 protobuf {
     protoc {
-        artifact = 'com.google.protobuf:protoc:3.25.1'
+        artifact = 'com.google.protobuf:protoc:4.34.1'
     }
     plugins {
         grpc {
-            artifact = 'io.grpc:protoc-gen-grpc-java:1.65.0'
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.80.0'
         }
     }
     generateProtoTasks {
@@ -31,7 +30,12 @@ file("$rootDir/version.properties").withInputStream { versionProps.load(it) }
 
 android {
     namespace "com.simplexray.an"
-    compileSdk 35
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
 
     defaultConfig {
         applicationId "com.simplexray.an"
@@ -46,8 +50,8 @@ android {
                 arguments "APP_LDFLAGS+=-Wl,--build-id=none"
             }
         }
-        targetSdk 35
-        minSdk 29
+        targetSdk = 35
+        minSdk = 29
     }
 
     signingConfigs {
@@ -111,9 +115,6 @@ android {
         includeInBundle = false
     }
     ndkVersion versionProps.NDK_VERSION
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
 
     splits {
         abi {
@@ -157,26 +158,30 @@ android {
 }
 
 dependencies {
-    implementation "io.grpc:grpc-okhttp:1.74.0"
-    implementation "io.grpc:grpc-protobuf:1.74.0"
-    implementation "io.grpc:grpc-stub:1.74.0"
-    implementation "io.grpc:grpc-kotlin-stub:1.4.3"
+    implementation "io.grpc:grpc-okhttp:1.80.0"
+    implementation "io.grpc:grpc-protobuf:1.80.0"
+    implementation "io.grpc:grpc-stub:1.80.0"
+    implementation "io.grpc:grpc-kotlin-stub:1.5.0"
 
-    implementation 'com.google.android.material:material:1.12.0'
-    implementation 'com.google.code.gson:gson:2.13.1'
+    // Enforce a unified version for the Protobuf runtime library with the `protoc` version upgraded by Dependabot.
+    implementation "com.google.protobuf:protobuf-java:4.34.1"
+
+    implementation 'com.google.android.material:material:1.13.0'
+    implementation 'com.google.code.gson:gson:2.13.2'
     implementation 'androidx.preference:preference-ktx:1.2.1'
-    implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.core:core-ktx:1.18.0'
 
-    implementation platform('androidx.compose:compose-bom:2025.08.00')
+    implementation platform('androidx.compose:compose-bom:2026.03.01')
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.ui:ui-graphics'
     implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.material:material-icons-core'
     implementation 'androidx.compose.ui:ui-tooling-preview-android'
     implementation 'androidx.activity:activity-compose'
     implementation 'androidx.compose.runtime:runtime-livedata'
-    implementation 'androidx.navigation:navigation-compose-android:2.9.3'
+    implementation 'androidx.navigation:navigation-compose-android:2.9.7'
 
     implementation 'com.github.nanihadesuka:LazyColumnScrollbar:2.2.0'
-    implementation 'sh.calvin.reorderable:reorderable:2.5.1'
-    implementation "com.squareup.okhttp3:okhttp:4.12.0"
+    implementation 'sh.calvin.reorderable:reorderable:3.0.0'
+    implementation "com.squareup.okhttp3:okhttp:5.3.2"
 }
