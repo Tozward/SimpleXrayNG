@@ -969,7 +969,7 @@ class MainViewModel(application: Application) :
     private suspend fun Call.await(): Response = suspendCancellableCoroutine { continuation ->
         enqueue(object : Callback {
             override fun onResponse(call: Call, response: Response) {
-                continuation.resume(response)
+                continuation.resumeWith(Result.success(response))
             }
 
             override fun onFailure(call: Call, e: IOException) {
