@@ -93,7 +93,8 @@ class MainViewModel(application: Application) :
                 bypassLanEnabled = prefs.bypassLan,
                 disableVpn = prefs.disableVpn,
                 themeMode = prefs.theme,
-                hideFromRecents = prefs.hideFromRecents
+                hideFromRecents = prefs.hideFromRecents,
+                checkPreReleaseEnabled = prefs.checkPreRelease
             ),
             info = InfoStates(
                 appVersion = BuildConfig.VERSION_NAME,
@@ -498,6 +499,13 @@ class MainViewModel(application: Application) :
         prefs.hideFromRecents = enabled
         _settingsState.value = _settingsState.value.copy(
             switches = _settingsState.value.switches.copy(hideFromRecents = enabled)
+        )
+    }
+
+    fun setCheckPreReleaseEnabled(enabled: Boolean) {
+        prefs.checkPreRelease = enabled
+        _settingsState.value = _settingsState.value.copy(
+            switches = _settingsState.value.switches.copy(checkPreReleaseEnabled = enabled)
         )
     }
 
@@ -1003,15 +1011,32 @@ class MainViewModel(application: Application) :
                 }
             }.build()
 
-            val request = Request.Builder()
-                .url(application.getString(R.string.source_url) + "/releases/latest")
-                .head()
-                .build()
-
             try {
-                val response = client.newCall(request).await()
-                val location = response.request.url.toString()
-                val latestTag = location.substringAfterLast("/tag/v")
+                val latestTag: String
+                if (prefs.checkPreRelease) {
+                    val sourceUrl = application.getString(R.string.source_url)
+                    val repoPath = sourceUrl.removePrefix("https://github.com/")
+                    val request = Request.Builder()
+                        .url("https://api.github.com/repos/$repoPath/releases?per_page=1")
+                        .header("Accept", "application/vnd.github.v3+json")
+                        .build()
+                    val response = client.newCall(request).await()
+                    if (!response.isSuccessful) throw java.io.IOException("API request failed")
+                    val bodyString = response.body?.string() ?: throw java.io.IOException("Empty response")
+                    val jsonArray = org.json.JSONArray(bodyString)
+                    if (jsonArray.length() == 0) throw java.io.IOException("No releases found")
+                    // tag_name 格式如 "v1.2.3"，去除前缀适配比对逻辑
+                    latestTag = jsonArray.getJSONObject(0).getString("tag_name").removePrefix("v")
+                } else {
+                    val request = Request.Builder()
+                        .url(application.getString(R.string.source_url) + "/releases/latest")
+                        .head()
+                        .build()
+                    val response = client.newCall(request).await()
+                    val location = response.request.url.toString()
+                    val latestTag = location.substringAfterLast("/tag/v")
+                }
+
                 Log.d(TAG, "Latest version tag: $latestTag")
                 val updateAvailable = compareVersions(latestTag) > 0
                 if (updateAvailable) {

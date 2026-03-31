@@ -14,8 +14,9 @@ data class SwitchStates(
     val httpProxyEnabled: Boolean,
     val bypassLanEnabled: Boolean,
     val disableVpn: Boolean,
-    val themeMode: ThemeMode,
-    val hideFromRecents: Boolean
+    val hideFromRecents: Boolean,
+    val checkPreReleaseEnabled: Boolean,
+    val themeMode: ThemeMode
 )
 
 data class InfoStates(

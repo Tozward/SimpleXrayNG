@@ -187,6 +187,12 @@ class Preferences(context: Context) {
             setValueInProvider(HIDE_FROM_RECENTS, enable)
         }
 
+    var checkPreRelease: Boolean
+        get() = getBooleanPref(CHECK_PRE_RELEASE, false)
+        set(enable) {
+            setValueInProvider(CHECK_PRE_RELEASE, enable)
+        }
+
     val tunnelMtu: Int
         get() = 8500
 
@@ -328,6 +334,7 @@ class Preferences(context: Context) {
         const val CONFIG_FILES_ORDER: String = "ConfigFilesOrder"
         const val DISABLE_VPN: String = "DisableVpn"
         const val HIDE_FROM_RECENTS: String = "HideFromRecents"
+        const val CHECK_PRE_RELEASE: String = "CheckPreRelease"
         const val CONNECTIVITY_TEST_TARGET: String = "ConnectivityTestTarget"
         const val CONNECTIVITY_TEST_TIMEOUT: String = "ConnectivityTestTimeout"
         const val GEOIP_URL: String = "GeoipUrl"

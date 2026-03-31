@@ -617,6 +617,18 @@ fun SettingsScreen(
         )
 
         ListItem(
+            headlineContent = { Text(stringResource(R.string.check_pre_release_title)) },
+            trailingContent = {
+                Switch(
+                    checked = settingsState.switches.checkPreReleaseEnabled,
+                    onCheckedChange = {
+                        mainViewModel.setCheckPreReleaseEnabled(it)
+                    }
+                )
+            }
+        )
+
+        ListItem(
             headlineContent = { Text(stringResource(R.string.kernel)) },
             supportingContent = { Text(settingsState.info.kernelVersion) }
         )
