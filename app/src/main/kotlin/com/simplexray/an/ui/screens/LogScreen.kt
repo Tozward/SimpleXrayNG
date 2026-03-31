@@ -111,12 +111,31 @@ fun LogEntryItem(logEntry: String) {
             if (endIndex > 0) {
                 val potentialTimestamp = logEntry.substring(0, endIndex)
                 if (potentialTimestamp.contains("/") && potentialTimestamp.contains(":")) {
+                    var displayTimestamp = potentialTimestamp
+                    if (potentialTimestamp.length >= 19) {
+                        try {
+                            val utcFormat = java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss", java.util.Locale.getDefault()).apply {
+                                timeZone = java.util.TimeZone.getTimeZone("UTC")
+                            }
+                            val dateStr = potentialTimestamp.substring(0, 19)
+                            val date = utcFormat.parse(dateStr)
+                            if (date != null) {
+                                val localFormat = java.text.SimpleDateFormat("yyyy/MM/dd HH:mm:ss", java.util.Locale.getDefault()).apply {
+                                    timeZone = java.util.TimeZone.getDefault()
+                                }
+                                displayTimestamp = localFormat.format(date) + potentialTimestamp.substring(19)
+                            }
+                        } catch (_: Exception) {
+                            // remain original timestamp when parsing failed
+                        }
+                    }
+
                     withStyle(
                         style = SpanStyle(
                             color = timestampColor
                         )
                     ) {
-                        append(logEntry.substring(0, endIndex))
+                        append(displayTimestamp)
                     }
                     append(logEntry.substring(endIndex))
                 } else {
