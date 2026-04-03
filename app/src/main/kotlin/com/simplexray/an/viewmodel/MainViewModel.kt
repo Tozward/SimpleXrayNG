@@ -55,6 +55,7 @@ import java.net.URL
 import java.util.regex.Pattern
 import javax.net.ssl.SSLSocketFactory
 import kotlin.coroutines.cancellation.CancellationException
+import androidx.core.net.toUri
 
 private const val TAG = "MainViewModel"
 
@@ -345,7 +346,7 @@ class MainViewModel(application: Application) :
         return filePath
     }
 
-    suspend fun handleSharedContent(content: String) {
+    fun handleSharedContent(content: String) {
         viewModelScope.launch(Dispatchers.IO) {
             if (!fileManager.importConfigFromContent(content).isNullOrEmpty()) {
                 _uiEvent.trySend(MainViewUiEvent.ShowSnackbar(application.getString(R.string.import_success)))
@@ -356,7 +357,7 @@ class MainViewModel(application: Application) :
         }
     }
 
-    suspend fun deleteConfigFile(file: File, callback: () -> Unit) {
+    fun deleteConfigFile(file: File, callback: () -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             if (_isServiceEnabled.value && _selectedConfigFile.value != null &&
                 _selectedConfigFile.value == file
@@ -1021,10 +1022,10 @@ class MainViewModel(application: Application) :
                         .header("Accept", "application/vnd.github.v3+json")
                         .build()
                     val response = client.newCall(request).await()
-                    if (!response.isSuccessful) throw java.io.IOException("API request failed")
-                    val bodyString = response.body?.string() ?: throw java.io.IOException("Empty response")
+                    if (!response.isSuccessful) throw IOException("API request failed")
+                    val bodyString = response.body?.string() ?: throw IOException("Empty response")
                     val jsonArray = org.json.JSONArray(bodyString)
-                    if (jsonArray.length() == 0) throw java.io.IOException("No releases found")
+                    if (jsonArray.length() == 0) throw IOException("No releases found")
                     // tag_name 格式如 "v1.2.3"，去除前缀适配比对逻辑
                     latestTag = jsonArray.getJSONObject(0).getString("tag_name").removePrefix("v")
                 } else {
@@ -1063,7 +1064,7 @@ class MainViewModel(application: Application) :
 
     fun downloadNewVersion(versionTag: String) {
         val url = application.getString(R.string.source_url) + "/releases/tag/v$versionTag"
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         application.startActivity(intent)
         _newVersionAvailable.value = null
