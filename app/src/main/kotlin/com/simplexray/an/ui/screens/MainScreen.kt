@@ -3,7 +3,6 @@ package com.simplexray.an.ui.screens
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -107,7 +106,7 @@ fun MainScreen(
 
     val logListState = rememberLazyListState()
     val configListState = rememberLazyListState()
-    val settingsScrollState = rememberScrollState()
+    val settingsListState = rememberLazyListState()
 
     val navBackStackEntry by bottomNavController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -128,7 +127,7 @@ fun MainScreen(
             onSwitchVpnService = callbacks.onSwitchVpnService,
             logListState = logListState,
             configListState = configListState,
-            settingsScrollState = settingsScrollState
+            settingsListState = settingsListState
         ) { paddingValues ->
             BottomNavHost(
                 navController = bottomNavController,
@@ -140,7 +139,7 @@ fun MainScreen(
                 geositeFilePickerLauncher = launchers.geositeFilePickerLauncher,
                 logListState = logListState,
                 configListState = configListState,
-                settingsScrollState = settingsScrollState
+                settingsListState = settingsListState
             )
         }
     } else {
@@ -154,7 +153,7 @@ fun MainScreen(
             geositeFilePickerLauncher = launchers.geositeFilePickerLauncher,
             logListState = logListState,
             configListState = configListState,
-            settingsScrollState = settingsScrollState
+            settingsListState = settingsListState
         )
     }
 }

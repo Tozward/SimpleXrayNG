@@ -4,7 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,24 +15,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SheetState
@@ -45,6 +51,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.TopEnd
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboard
@@ -56,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.simplexray.an.R
 import com.simplexray.an.common.ThemeMode
+import com.simplexray.an.ui.theme.AppSwitchDefaults
 import com.simplexray.an.viewmodel.MainViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -66,7 +74,7 @@ fun SettingsScreen(
     mainViewModel: MainViewModel,
     geoipFilePickerLauncher: ActivityResultLauncher<Array<String>>,
     geositeFilePickerLauncher: ActivityResultLauncher<Array<String>>,
-    scrollState: androidx.compose.foundation.ScrollState
+    listState: LazyListState
 ) {
     val context = LocalContext.current
     val settingsState by mainViewModel.settingsState.collectAsStateWithLifecycle()
@@ -86,12 +94,14 @@ fun SettingsScreen(
     var editingRuleFile by remember { mutableStateOf<String?>(null) }
     var ruleFileUrl by remember { mutableStateOf("") }
 
-    val themeOptions = listOf(
-        ThemeMode.Light,
-        ThemeMode.Dark,
-        ThemeMode.Amoled,
-        ThemeMode.Auto
-    )
+    val themeOptions = remember {
+        listOf(
+            ThemeMode.Light,
+            ThemeMode.Dark,
+            ThemeMode.Amoled,
+            ThemeMode.Auto
+        )
+    }
     var selectedThemeOption by remember { mutableStateOf(settingsState.switches.themeMode) }
     var themeExpanded by remember { mutableStateOf(false) }
 
@@ -244,15 +254,18 @@ fun SettingsScreen(
         )
     }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(10.dp)
+            .padding(horizontal = 10.dp),
+        state = listState
     ) {
-        PreferenceCategoryTitle(stringResource(R.string.general))
+        item {
+            PreferenceCategoryTitle(stringResource(R.string.general))
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.use_template_title)) },
             supportingContent = { Text(stringResource(R.string.use_template_summary)) },
             trailingContent = {
@@ -260,91 +273,98 @@ fun SettingsScreen(
                     checked = settingsState.switches.useTemplateEnabled,
                     onCheckedChange = {
                         mainViewModel.setUseTemplateEnabled(it)
-                    }
+                    },
+                    colors = AppSwitchDefaults.colors()
                 )
             }
         )
+        }
 
-        ListItem(
-            headlineContent = { Text(stringResource(R.string.theme_title)) },
-            supportingContent = {
-                Text(stringResource(id = R.string.theme_summary))
-            },
-            trailingContent = {
-                ExposedDropdownMenuBox(
-                    expanded = themeExpanded,
-                    onExpandedChange = { themeExpanded = it }
-                ) {
-                    TextButton(
-                        onClick = {},
-                        modifier = Modifier
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable, true),
-                        colors = ButtonDefaults.textButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer
-                        )
+        item {
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.theme_title)) },
+                supportingContent = {
+                    Text(stringResource(id = R.string.theme_summary))
+                },
+                trailingContent = {
+                    ExposedDropdownMenuBox(
+                        expanded = themeExpanded,
+                        onExpandedChange = { themeExpanded = it }
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    id = when (selectedThemeOption) {
-                                        ThemeMode.Light -> R.string.theme_light
-                                        ThemeMode.Dark -> R.string.theme_dark
-                                        ThemeMode.Amoled -> R.string.theme_amoled
-                                        ThemeMode.Auto -> R.string.auto
-                                    }
-                                ),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.primary
+                        TextButton(
+                            onClick = {},
+                            modifier = Modifier
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
+                                .width(140.dp),
+                            colors = ButtonDefaults.textButtonColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceContainer
                             )
-                            if (themeExpanded) {
-                                Icon(
-                                    imageVector = Icons.Filled.KeyboardArrowUp,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        id = when (selectedThemeOption) {
+                                            ThemeMode.Light -> R.string.theme_light
+                                            ThemeMode.Dark -> R.string.theme_dark
+                                            ThemeMode.Amoled -> R.string.theme_amoled
+                                            ThemeMode.Auto -> R.string.auto
+                                        }
+                                    ),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
                                 )
-                            } else {
-                                Icon(
-                                    imageVector = Icons.Filled.KeyboardArrowDown,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary
+                                if (themeExpanded) {
+                                    Icon(
+                                        imageVector = Icons.Filled.KeyboardArrowUp,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Filled.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                            }
+                        }
+                        ExposedDropdownMenu(
+                            expanded = themeExpanded,
+                            onDismissRequest = { themeExpanded = false }
+                        ) {
+                            themeOptions.forEach { option ->
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            stringResource(
+                                                id = when (option) {
+                                                    ThemeMode.Light -> R.string.theme_light
+                                                    ThemeMode.Dark -> R.string.theme_dark
+                                                    ThemeMode.Amoled -> R.string.theme_amoled
+                                                    ThemeMode.Auto -> R.string.auto
+                                                }
+                                            )
+                                        )
+                                    },
+                                    onClick = {
+                                        selectedThemeOption = option
+                                        mainViewModel.setTheme(option)
+                                        themeExpanded = false
+                                    }
                                 )
                             }
                         }
                     }
-                    ExposedDropdownMenu(
-                        expanded = themeExpanded,
-                        onDismissRequest = { themeExpanded = false }
-                    ) {
-                        themeOptions.forEach { option ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        stringResource(
-                                            id = when (option) {
-                                                ThemeMode.Light -> R.string.theme_light
-                                                ThemeMode.Dark -> R.string.theme_dark
-                                                ThemeMode.Amoled -> R.string.theme_amoled
-                                                ThemeMode.Auto -> R.string.auto
-                                            }
-                                        )
-                                    )
-                                },
-                                onClick = {
-                                    selectedThemeOption = option
-                                    mainViewModel.setTheme(option)
-                                    themeExpanded = false
-                                }
-                            )
-                        }
-                    }
                 }
-            }
-        )
+            )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.hide_from_recents_title)) },
             supportingContent = { Text(stringResource(R.string.hide_from_recents_summary)) },
             trailingContent = {
@@ -355,14 +375,19 @@ fun SettingsScreen(
                         // take effect immediately
                         val am = context.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager
                         am.appTasks?.firstOrNull()?.setExcludeFromRecents(it)
-                    }
+                    },
+                    colors = AppSwitchDefaults.colors()
                 )
             }
         )
+        }
 
-        PreferenceCategoryTitle(stringResource(R.string.vpn_interface))
+        item {
+            PreferenceCategoryTitle(stringResource(R.string.vpn_interface))
+        }
 
-        ListItem(
+        item {
+            ListItem(
             modifier = Modifier.clickable {
                 mainViewModel.navigateToAppList()
             },
@@ -375,8 +400,10 @@ fun SettingsScreen(
                 )
             }
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.disable_vpn_title)) },
             supportingContent = { Text(stringResource(R.string.disable_vpn_summary)) },
             trailingContent = {
@@ -384,12 +411,15 @@ fun SettingsScreen(
                     checked = settingsState.switches.disableVpn,
                     onCheckedChange = {
                         mainViewModel.setDisableVpnEnabled(it)
-                    }
+                    },
+                    colors = AppSwitchDefaults.colors()
                 )
             }
         )
+        }
 
-        EditableListItemWithBottomSheet(
+        item {
+            EditableListItemWithBottomSheet(
             headline = stringResource(R.string.socks_port),
             currentValue = settingsState.socksPort.value,
             onValueConfirmed = { newValue -> mainViewModel.updateSocksPort(newValue) },
@@ -401,8 +431,10 @@ fun SettingsScreen(
             sheetState = sheetState,
             scope = scope
         )
+        }
 
-        EditableListItemWithBottomSheet(
+        item {
+            EditableListItemWithBottomSheet(
             headline = stringResource(R.string.dns_ipv4),
             currentValue = settingsState.dnsIpv4.value,
             onValueConfirmed = { newValue -> mainViewModel.updateDnsIpv4(newValue) },
@@ -414,8 +446,10 @@ fun SettingsScreen(
             sheetState = sheetState,
             scope = scope
         )
+        }
 
-        EditableListItemWithBottomSheet(
+        item {
+            EditableListItemWithBottomSheet(
             headline = stringResource(R.string.dns_ipv6),
             currentValue = settingsState.dnsIpv6.value,
             onValueConfirmed = { newValue -> mainViewModel.updateDnsIpv6(newValue) },
@@ -427,8 +461,10 @@ fun SettingsScreen(
             sheetState = sheetState,
             scope = scope
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.ipv6)) },
             supportingContent = { Text(stringResource(R.string.ipv6_enabled)) },
             trailingContent = {
@@ -437,12 +473,15 @@ fun SettingsScreen(
                     onCheckedChange = {
                         mainViewModel.setIpv6Enabled(it)
                     },
-                    enabled = !vpnDisabled
+                    enabled = !vpnDisabled,
+                    colors = AppSwitchDefaults.colors()
                 )
             }
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.http_proxy_title)) },
             supportingContent = { Text(stringResource(R.string.http_proxy_summary)) },
             trailingContent = {
@@ -451,12 +490,15 @@ fun SettingsScreen(
                     onCheckedChange = {
                         mainViewModel.setHttpProxyEnabled(it)
                     },
-                    enabled = !vpnDisabled
+                    enabled = !vpnDisabled,
+                    colors = AppSwitchDefaults.colors()
                 )
             }
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.bypass_lan_title)) },
             supportingContent = { Text(stringResource(R.string.bypass_lan_summary)) },
             trailingContent = {
@@ -465,14 +507,19 @@ fun SettingsScreen(
                     onCheckedChange = {
                         mainViewModel.setBypassLanEnabled(it)
                     },
-                    enabled = !vpnDisabled
+                    enabled = !vpnDisabled,
+                    colors = AppSwitchDefaults.colors()
                 )
             }
         )
+        }
 
-        PreferenceCategoryTitle(stringResource(R.string.rule_files_category_title))
+        item {
+            PreferenceCategoryTitle(stringResource(R.string.rule_files_category_title))
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text("geoip.dat") },
             supportingContent = { Text(geoipProgress ?: settingsState.info.geoipSummary) },
             trailingContent = {
@@ -515,8 +562,10 @@ fun SettingsScreen(
             },
             modifier = Modifier
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text("geosite.dat") },
             supportingContent = { Text(geositeProgress ?: settingsState.info.geositeSummary) },
             trailingContent = {
@@ -559,10 +608,14 @@ fun SettingsScreen(
             },
             modifier = Modifier
         )
+        }
 
-        PreferenceCategoryTitle(stringResource(R.string.connectivity_test))
+        item {
+            PreferenceCategoryTitle(stringResource(R.string.connectivity_test))
+        }
 
-        EditableListItemWithBottomSheet(
+        item {
+            EditableListItemWithBottomSheet(
             headline = stringResource(R.string.connectivity_test_target),
             currentValue = settingsState.connectivityTestTarget.value,
             onValueConfirmed = { newValue -> mainViewModel.updateConnectivityTestTarget(newValue) },
@@ -573,8 +626,10 @@ fun SettingsScreen(
             sheetState = sheetState,
             scope = scope
         )
+        }
 
-        EditableListItemWithBottomSheet(
+        item {
+            EditableListItemWithBottomSheet(
             headline = stringResource(R.string.connectivity_test_timeout),
             currentValue = settingsState.connectivityTestTimeout.value,
             onValueConfirmed = { newValue -> mainViewModel.updateConnectivityTestTimeout(newValue) },
@@ -585,10 +640,14 @@ fun SettingsScreen(
             sheetState = sheetState,
             scope = scope
         )
+        }
 
-        PreferenceCategoryTitle(stringResource(R.string.about))
+        item {
+            PreferenceCategoryTitle(stringResource(R.string.about))
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.version)) },
             supportingContent = { Text(settingsState.info.appVersion) },
             trailingContent = {
@@ -598,9 +657,10 @@ fun SettingsScreen(
                             mainViewModel.checkForUpdates()
                         },
                         colors = ButtonDefaults.textButtonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                             disabledContainerColor = Color.Transparent
                         ),
+                        shape = CircleShape,
                         enabled = !isCheckingForUpdates
                     ) {
                         if (isCheckingForUpdates) {
@@ -618,25 +678,32 @@ fun SettingsScreen(
                 }
             }
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.check_pre_release_title)) },
             trailingContent = {
                 Switch(
                     checked = settingsState.switches.checkPreReleaseEnabled,
                     onCheckedChange = {
                         mainViewModel.setCheckPreReleaseEnabled(it)
-                    }
+                    },
+                    colors = AppSwitchDefaults.colors()
                 )
             }
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             headlineContent = { Text(stringResource(R.string.kernel)) },
             supportingContent = { Text(settingsState.info.kernelVersion) }
         )
+        }
 
-        ListItem(
+        item {
+            ListItem(
             modifier = Modifier.clickable {
                 val browserIntent =
                     Intent(Intent.ACTION_VIEW, Uri.parse(context.getString(R.string.source_url)))
@@ -651,6 +718,11 @@ fun SettingsScreen(
                 )
             }
         )
+        }
+
+        item {
+            Spacer(modifier = Modifier.height(10.dp))
+        }
     }
 }
 

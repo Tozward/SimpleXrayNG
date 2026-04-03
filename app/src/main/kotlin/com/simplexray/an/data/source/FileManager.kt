@@ -22,13 +22,11 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.text.SimpleDateFormat
-import java.util.Base64
 import java.util.Date
 import java.util.Locale
 import java.util.zip.DataFormatException
@@ -41,6 +39,14 @@ class FileManager(private val application: Application, private val prefs: Prefe
     @Throws(IOException::class)
     private fun readFileContent(file: File): String {
         return file.readText(StandardCharsets.UTF_8)
+    }
+
+    private fun assetExists(filename: String): Boolean {
+        return try {
+            application.assets.open(filename).use { true }
+        } catch (e: IOException) {
+            false
+        }
     }
 
     @Throws(IOException::class, NoSuchAlgorithmException::class)
@@ -489,6 +495,11 @@ class FileManager(private val application: Application, private val prefs: Prefe
         val dir = application.filesDir
         dir.mkdirs()
         for (file in files) {
+            if (!assetExists(file)) {
+                Log.w(TAG, "Asset $file not found in APK assets, skipping extraction.")
+                continue
+            }
+
             val targetFile = File(dir, file)
             var needsExtraction = false
 
@@ -534,7 +545,7 @@ class FileManager(private val application: Application, private val prefs: Prefe
                         }
                     }
                 } catch (e: IOException) {
-                    throw RuntimeException("Failed to extract asset: $file", e)
+                    Log.e(TAG, "Failed to extract asset: $file", e)
                 }
             } else {
                 Log.d(TAG, "Asset $file already exists and matches hash, skipping extraction.")
@@ -717,35 +728,53 @@ class FileManager(private val application: Application, private val prefs: Prefe
 
     suspend fun restoreDefaultGeoip(): Boolean {
         return withContext(Dispatchers.IO) {
+            if (!assetExists("geoip.dat")) {
+                Log.w(TAG, "Default asset geoip.dat not found, cannot restore.")
+                return@withContext false
+            }
             prefs.customGeoipImported = false
             val file = File(application.filesDir, "geoip.dat")
-            application.assets.open("geoip.dat").use { input ->
-                FileOutputStream(file).use { output ->
-                    val buffer = ByteArray(1024)
-                    var read: Int
-                    while (input.read(buffer).also { read = it } != -1) {
-                        output.write(buffer, 0, read)
+            try {
+                application.assets.open("geoip.dat").use { input ->
+                    FileOutputStream(file).use { output ->
+                        val buffer = ByteArray(1024)
+                        var read: Int
+                        while (input.read(buffer).also { read = it } != -1) {
+                            output.write(buffer, 0, read)
+                        }
                     }
                 }
+                true
+            } catch (e: IOException) {
+                Log.e(TAG, "Failed to restore default geoip.dat", e)
+                false
             }
-            true
         }
     }
 
     suspend fun restoreDefaultGeosite(): Boolean {
         return withContext(Dispatchers.IO) {
+            if (!assetExists("geosite.dat")) {
+                Log.w(TAG, "Default asset geosite.dat not found, cannot restore.")
+                return@withContext false
+            }
             prefs.customGeositeImported = false
             val file = File(application.filesDir, "geosite.dat")
-            application.assets.open("geosite.dat").use { input ->
-                FileOutputStream(file).use { output ->
-                    val buffer = ByteArray(1024)
-                    var read: Int
-                    while (input.read(buffer).also { read = it } != -1) {
-                        output.write(buffer, 0, read)
+            try {
+                application.assets.open("geosite.dat").use { input ->
+                    FileOutputStream(file).use { output ->
+                        val buffer = ByteArray(1024)
+                        var read: Int
+                        while (input.read(buffer).also { read = it } != -1) {
+                            output.write(buffer, 0, read)
+                        }
                     }
                 }
+                true
+            } catch (e: IOException) {
+                Log.e(TAG, "Failed to restore default geosite.dat", e)
+                false
             }
-            true
         }
     }
 

@@ -9,7 +9,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
@@ -105,7 +104,7 @@ fun BottomNavHost(
     geositeFilePickerLauncher: ActivityResultLauncher<Array<String>>,
     logListState: LazyListState,
     configListState: LazyListState,
-    settingsScrollState: ScrollState
+    settingsListState: LazyListState
 ) {
     NavHost(
         navController = navController,
@@ -162,7 +161,7 @@ fun BottomNavHost(
                 mainViewModel = mainViewModel,
                 geoipFilePickerLauncher = geoipFilePickerLauncher,
                 geositeFilePickerLauncher = geositeFilePickerLauncher,
-                scrollState = settingsScrollState
+                listState = settingsListState
             )
         }
     }

@@ -8,15 +8,21 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import com.simplexray.an.common.ThemeMode
 import com.simplexray.an.ui.navigation.AppNavHost
 import com.simplexray.an.ui.theme.AppTheme
+import com.simplexray.an.ui.theme.AppThemeAnimationDefaults
 import com.simplexray.an.viewmodel.MainViewModel
 import com.simplexray.an.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Dispatchers
@@ -31,8 +37,37 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         window.isNavigationBarContrastEnforced = false
 
-        mainViewModel.reloadView = { initView() }
-        initView()
+        setContent {
+            val themeMode = mainViewModel.settingsState.collectAsStateWithLifecycle().value.switches.themeMode
+
+            AppTheme(themeMode = themeMode) {
+                val statusBarColor by animateColorAsState(
+                    targetValue = MaterialTheme.colorScheme.surface,
+                    animationSpec = AppThemeAnimationDefaults.SystemBarColorAnimationSpec,
+                    label = "statusBarColor"
+                )
+                val navigationBarColor by animateColorAsState(
+                    targetValue = MaterialTheme.colorScheme.surfaceContainer,
+                    animationSpec = AppThemeAnimationDefaults.SystemBarColorAnimationSpec,
+                    label = "navigationBarColor"
+                )
+
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    SideEffect {
+                        window.statusBarColor = statusBarColor.toArgb()
+                        window.navigationBarColor = navigationBarColor.toArgb()
+                        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+                        insetsController.isAppearanceLightStatusBars = statusBarColor.luminance() > 0.5f
+                        insetsController.isAppearanceLightNavigationBars = navigationBarColor.luminance() > 0.5f
+                    }
+
+                    AppNavHost(mainViewModel)
+                }
+            }
+        }
 
         // Dynamically apply "Hide from the Recents screen" setting
         val am = getSystemService(ACTIVITY_SERVICE) as android.app.ActivityManager
@@ -40,29 +75,6 @@ class MainActivity : ComponentActivity() {
 
         processShareIntent(intent)
         Log.d(TAG, "MainActivity onCreate called.")
-    }
-
-    private fun initView() {
-        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-        val currentNightMode =
-            resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        val isDark = when (mainViewModel.prefs.theme) {
-            ThemeMode.Light -> false
-            ThemeMode.Dark, ThemeMode.Amoled -> true
-            ThemeMode.Auto -> currentNightMode == Configuration.UI_MODE_NIGHT_YES
-        }
-        insetsController.isAppearanceLightStatusBars = !isDark
-
-        setContent {
-            AppTheme(themeMode = mainViewModel.prefs.theme) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    AppNavHost(mainViewModel)
-                }
-            }
-        }
     }
 
     override fun onNewIntent(intent: Intent?) {
@@ -80,14 +92,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        val currentNightMode = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        val isDark = when (mainViewModel.prefs.theme) {
-            ThemeMode.Light -> false
-            ThemeMode.Dark, ThemeMode.Amoled -> true
-            ThemeMode.Auto -> currentNightMode == Configuration.UI_MODE_NIGHT_YES
-        }
-        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-        insetsController.isAppearanceLightStatusBars = !isDark
         Log.d(TAG, "MainActivity onConfigurationChanged called.")
     }
 

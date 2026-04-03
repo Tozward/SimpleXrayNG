@@ -493,7 +493,6 @@ class MainViewModel(application: Application) :
         _settingsState.value = _settingsState.value.copy(
             switches = _settingsState.value.switches.copy(themeMode = mode)
         )
-        reloadView?.invoke()
     }
 
     fun setHideFromRecentsEnabled(enabled: Boolean) {
@@ -1120,4 +1119,5 @@ class MainViewModelFactory(
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
+
 
