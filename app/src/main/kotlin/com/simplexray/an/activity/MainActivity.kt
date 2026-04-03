@@ -16,7 +16,6 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -27,6 +26,16 @@ import com.simplexray.an.viewmodel.MainViewModel
 import com.simplexray.an.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsTopHeight
+import androidx.compose.ui.Alignment
 
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels { MainViewModelFactory(application) }
@@ -41,30 +50,38 @@ class MainActivity : ComponentActivity() {
             val themeMode = mainViewModel.settingsState.collectAsStateWithLifecycle().value.switches.themeMode
 
             AppTheme(themeMode = themeMode) {
-                val statusBarColor by animateColorAsState(
-                    targetValue = MaterialTheme.colorScheme.surface,
-                    animationSpec = AppThemeAnimationDefaults.SystemBarColorAnimationSpec,
-                    label = "statusBarColor"
-                )
-                val navigationBarColor by animateColorAsState(
-                    targetValue = MaterialTheme.colorScheme.surfaceContainer,
-                    animationSpec = AppThemeAnimationDefaults.SystemBarColorAnimationSpec,
-                    label = "navigationBarColor"
-                )
+                val statusBarColor = MaterialTheme.colorScheme.surface
+                val navigationBarColor = MaterialTheme.colorScheme.surfaceContainer
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     SideEffect {
-                        window.statusBarColor = statusBarColor.toArgb()
-                        window.navigationBarColor = navigationBarColor.toArgb()
                         val insetsController = WindowCompat.getInsetsController(window, window.decorView)
                         insetsController.isAppearanceLightStatusBars = statusBarColor.luminance() > 0.5f
                         insetsController.isAppearanceLightNavigationBars = navigationBarColor.luminance() > 0.5f
                     }
 
-                    AppNavHost(mainViewModel)
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        AppNavHost(mainViewModel)
+
+                        Spacer(
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .fillMaxWidth()
+                                .windowInsetsTopHeight(WindowInsets.statusBars)
+                                .background(statusBarColor)
+                        )
+
+                        Spacer(
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .fillMaxWidth()
+                                .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                                .background(navigationBarColor)
+                        )
+                    }
                 }
             }
         }
