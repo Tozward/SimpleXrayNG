@@ -8,34 +8,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.luminance
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.simplexray.an.common.ThemeMode
 import com.simplexray.an.ui.navigation.AppNavHost
 import com.simplexray.an.ui.theme.AppTheme
-import com.simplexray.an.ui.theme.AppThemeAnimationDefaults
 import com.simplexray.an.viewmodel.MainViewModel
 import com.simplexray.an.viewmodel.MainViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.foundation.layout.windowInsetsTopHeight
-import androidx.compose.ui.Alignment
 
 class MainActivity : ComponentActivity() {
     private val mainViewModel: MainViewModel by viewModels { MainViewModelFactory(application) }
@@ -48,40 +37,28 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeMode = mainViewModel.settingsState.collectAsStateWithLifecycle().value.switches.themeMode
+            val isSystemDark = isSystemInDarkTheme()
+            
+            val isDarkTheme = remember(themeMode, isSystemDark) {
+                when (themeMode) {
+                    ThemeMode.Light -> false
+                    ThemeMode.Dark, ThemeMode.Amoled -> true
+                    ThemeMode.Auto -> isSystemDark
+                }
+            }
 
             AppTheme(themeMode = themeMode) {
-                val statusBarColor = MaterialTheme.colorScheme.surface
-                val navigationBarColor = MaterialTheme.colorScheme.surfaceContainer
+                LaunchedEffect(isDarkTheme) {
+                    val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+                    insetsController.isAppearanceLightStatusBars = !isDarkTheme
+                    insetsController.isAppearanceLightNavigationBars = !isDarkTheme
+                }
 
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SideEffect {
-                        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
-                        insetsController.isAppearanceLightStatusBars = statusBarColor.luminance() > 0.5f
-                        insetsController.isAppearanceLightNavigationBars = navigationBarColor.luminance() > 0.5f
-                    }
-
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        AppNavHost(mainViewModel)
-
-                        Spacer(
-                            modifier = Modifier
-                                .align(Alignment.TopCenter)
-                                .fillMaxWidth()
-                                .windowInsetsTopHeight(WindowInsets.statusBars)
-                                .background(statusBarColor)
-                        )
-
-                        Spacer(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .fillMaxWidth()
-                                .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                                .background(navigationBarColor)
-                        )
-                    }
+                    AppNavHost(mainViewModel)
                 }
             }
         }
