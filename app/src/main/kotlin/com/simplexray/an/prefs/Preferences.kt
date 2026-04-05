@@ -8,6 +8,7 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.simplexray.an.R
 import com.simplexray.an.common.ThemeMode
+import java.io.File
 
 class Preferences(context: Context) {
     private val contentResolver: ContentResolver

@@ -90,7 +90,7 @@ jobs:
           export CC=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang
           export CGO_CFLAGS="-O3 -flto -march=armv8-a+crypto"
           export CGO_LDFLAGS="-O3 -flto"
-          go build -o xray -trimpath -buildvcs=false -ldflags="-X github.com/xtls/xray-core/core.build=${COMMID}-UDS_Mod -s -w -buildid=" -v ./main
+          go build -o xray -trimpath -buildvcs=false -gcflags="all=-l=4" -ldflags="-X github.com/xtls/xray-core/core.build=${COMMID}-UDS_Mod -s -w -buildid=" -v ./main
           mkdir -p ../app/src/main/jniLibs/arm64-v8a
           mv xray ../app/src/main/jniLibs/arm64-v8a/libxray.so
 
@@ -100,7 +100,7 @@ jobs:
           export CC=$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/x86_64-linux-android24-clang
           export CGO_CFLAGS="-O3 -flto -march=x86-64-v3"
           export CGO_LDFLAGS="-O3 -flto"
-          go build -o xray -trimpath -buildvcs=false -ldflags="-X github.com/xtls/xray-core/core.build=${COMMID}-UDS_Mod -s -w -buildid=" -v ./main
+          go build -o xray -trimpath -buildvcs=false -gcflags="all=-l=4" -ldflags="-X github.com/xtls/xray-core/core.build=${COMMID}-UDS_Mod -s -w -buildid=" -v ./main
           mkdir -p ../app/src/main/jniLibs/x86_64
           mv xray ../app/src/main/jniLibs/x86_64/libxray.so
 
