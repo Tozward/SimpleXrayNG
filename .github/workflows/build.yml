@@ -77,7 +77,7 @@ jobs:
           # Clone Xray-core source and checkout tag
           git clone https://github.com/Tozward/Xray-core-socks-uds.git Xray-core
           cd Xray-core
-          git checkout ${{ env.XRAY_VERSION }}
+          # git checkout ${{ env.XRAY_VERSION }}
           COMMID=$(git rev-parse HEAD | cut -c 1-7)
 
           # Set common environment variables
