@@ -112,6 +112,12 @@ class Preferences(context: Context) {
             setValueInProvider(SOCKS_PORT, port.toString())
         }
 
+    var udsPath: String
+        get() = getPrefData(UDS_PATH).first ?: File(context1.cacheDir, "xray_uds.sock").absolutePath
+        set(value) {
+            setValueInProvider(UDS_PATH, value)
+        }
+
     val socksUsername: String
         get() = getPrefData(SOCKS_USER).first ?: ""
 
@@ -315,6 +321,7 @@ class Preferences(context: Context) {
     companion object {
         const val SOCKS_ADDR: String = "SocksAddr"
         const val SOCKS_PORT: String = "SocksPort"
+        const val UDS_PATH: String = "UdsPath"
         const val SOCKS_USER: String = "SocksUser"
         const val SOCKS_PASS: String = "SocksPass"
         const val DNS_IPV4: String = "DnsIpv4"

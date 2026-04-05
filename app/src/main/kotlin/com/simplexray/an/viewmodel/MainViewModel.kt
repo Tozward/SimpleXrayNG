@@ -85,6 +85,7 @@ class MainViewModel(application: Application) :
     private val _settingsState = MutableStateFlow(
         SettingsState(
             socksPort = InputFieldState(prefs.socksPort.toString()),
+            udsPath = InputFieldState(prefs.udsPath),
             dnsIpv4 = InputFieldState(prefs.dnsIpv4),
             dnsIpv6 = InputFieldState(prefs.dnsIpv6),
             switches = SwitchStates(
@@ -180,6 +181,7 @@ class MainViewModel(application: Application) :
     private fun updateSettingsState() {
         _settingsState.value = _settingsState.value.copy(
             socksPort = InputFieldState(prefs.socksPort.toString()),
+            udsPath = InputFieldState(prefs.udsPath),
             dnsIpv4 = InputFieldState(prefs.dnsIpv4),
             dnsIpv6 = InputFieldState(prefs.dnsIpv6),
             switches = SwitchStates(
@@ -412,6 +414,26 @@ class MainViewModel(application: Application) :
             )
             false
         }
+    }
+
+    fun updateUdsPath(pathString: String): Boolean {
+        // 允许留空（表示关闭 UDS 降级走 TCP），或以 '/' 或 '@' 开头
+        if (pathString.isEmpty() || ((pathString.startsWith("/") || pathString.startsWith("@")) && pathString.length > 1)) {
+            prefs.udsPath = pathString
+            _settingsState.value = _settingsState.value.copy(
+                udsPath = InputFieldState(pathString)
+            )
+            return true
+        }
+        
+        _settingsState.value = _settingsState.value.copy(
+            udsPath = InputFieldState(
+                value = pathString,
+                error = application.getString(R.string.invalid_uds_path),
+                isValid = false
+            )
+        )
+        return false
     }
 
     fun updateDnsIpv4(ipv4Addr: String): Boolean {

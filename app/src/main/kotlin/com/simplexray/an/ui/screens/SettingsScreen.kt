@@ -435,6 +435,21 @@ fun SettingsScreen(
 
         item {
             EditableListItemWithBottomSheet(
+            headline = stringResource(R.string.tunnel_uds_path),
+            currentValue = settingsState.udsPath.value,
+            onValueConfirmed = { newValue -> mainViewModel.updateUdsPath(newValue) },
+            label = stringResource(R.string.tunnel_uds_path_desc),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            isError = !settingsState.udsPath.isValid,
+            errorMessage = settingsState.udsPath.error,
+            enabled = !vpnDisabled,
+            sheetState = sheetState,
+            scope = scope
+        )
+        }
+
+        item {
+            EditableListItemWithBottomSheet(
             headline = stringResource(R.string.dns_ipv4),
             currentValue = settingsState.dnsIpv4.value,
             onValueConfirmed = { newValue -> mainViewModel.updateDnsIpv4(newValue) },

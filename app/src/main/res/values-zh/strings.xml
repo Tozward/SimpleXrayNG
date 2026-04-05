@@ -124,4 +124,7 @@
     <string name="theme_dark">深色</string>
     <string name="theme_amoled">AMOLED</string>
     <string name="auto">自动</string>
+    <string name="tunnel_uds_path">本地TUN UDS路径</string>
+    <string name="tunnel_uds_path_desc">留空则本地TUN降级到TCP</string>
+    <string name="invalid_uds_path">UDS路径格式无效</string>
 </resources>

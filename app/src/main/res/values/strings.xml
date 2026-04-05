@@ -129,4 +129,7 @@
     <string name="theme_dark">Dark</string>
     <string name="theme_amoled">AMOLED</string>
     <string name="auto">Auto</string>
+    <string name="tunnel_uds_path">Tunnel UDS Path</string>
+    <string name="tunnel_uds_path_desc">Leave blank to fallback to TCP proxy</string>
+    <string name="invalid_uds_path">Invalid UDS Path</string>
 </resources>

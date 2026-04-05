@@ -41,5 +41,6 @@ data class SettingsState(
     val info: InfoStates,
     val files: FileStates,
     val connectivityTestTarget: InputFieldState,
+    val udsPath: InputFieldState = InputFieldState(""),
     val connectivityTestTimeout: InputFieldState
 ) 

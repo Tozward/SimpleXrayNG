@@ -428,11 +428,20 @@ class TProxyService : VpnService() {
 tunnel:
   mtu: ${prefs.tunnelMtu}
 """
-            tproxyConf += """socks5:
+            val uds = prefs.udsPath
+            if (uds.isNotBlank()) {
+                tproxyConf += """socks5:
+  port: 0
+  address: '$uds'
+  udp: 'uot'
+"""
+            } else {
+                tproxyConf += """socks5:
   port: ${prefs.socksPort}
   address: '${prefs.socksAddress}'
   udp: '${if (prefs.udpInTcp) "tcp" else "udp"}'
 """
+            }
             if (prefs.socksUsername.isNotEmpty() && prefs.socksPassword.isNotEmpty()) {
                 tproxyConf += "  username: '" + prefs.socksUsername + "'\n"
                 tproxyConf += "  password: '" + prefs.socksPassword + "'\n"

@@ -38,7 +38,13 @@
         ],
         "enabled": true
       },
-      "tag": "socks"
+      "tag": "socks-tcp"
+    },
+    {
+      "listen": "/data/data/com.simplexray.an/cache/xray_uds.sock",
+      "protocol": "socks_uds",
+      "settings": {},
+      "tag": "socks-uds"
     }
   ],
   "outbounds": [
